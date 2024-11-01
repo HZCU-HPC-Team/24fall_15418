@@ -4,6 +4,7 @@
 // Use this code to time your threads
 #include "CycleTimer.h"
 
+
 /*
 
   15418 Spring 2012 note: This code was modified from example code
@@ -43,19 +44,19 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+
 // Core computation of Mandelbrot set membershop
 // Iterate complex number c to determine whether it diverges
 static inline int mandel(float c_re, float c_im, int count)
 {
     float z_re = c_re, z_im = c_im;
     int i;
-    for (i = 0; i < count; ++i)
-    {
+    for (i = 0; i < count; ++i) {
 
         if (z_re * z_re + z_im * z_im > 4.f)
             break;
 
-        float new_re = z_re * z_re - z_im * z_im;
+        float new_re = z_re*z_re - z_im*z_im;
         float new_im = 2.f * z_re * z_im;
         z_re = c_re + new_re;
         z_im = c_im + new_im;
@@ -85,10 +86,8 @@ void mandelbrotSerial(
     float dx = (x1 - x0) / width;
     float dy = (y1 - y0) / height;
 
-    for (int j = startRow; j < endRow; j++)
-    {
-        for (int i = 0; i < width; ++i)
-        {
+    for (int j = startRow; j < endRow; j++) {
+        for (int i = 0; i < width; ++i) {
             float x = x0 + i * dx;
             float y = y0 + j * dy;
 
@@ -98,27 +97,28 @@ void mandelbrotSerial(
     }
 }
 
+
 // Struct for passing arguments to thread routine
-typedef struct
-{
+typedef struct {
     float x0, x1;
     float y0, y1;
     unsigned int width;
     unsigned int height;
     int maxIterations;
-    int *output;
+    int* output;
     int threadId;
     int numThreads;
 } WorkerArgs;
+
+
 
 //
 // workerThreadStart --
 //
 // Thread entrypoint.
-void *workerThreadStart(void *threadArgs)
-{
+void* workerThreadStart(void* threadArgs) {
 
-    WorkerArgs *args = static_cast<WorkerArgs *>(threadArgs);
+    WorkerArgs* args = static_cast<WorkerArgs*>(threadArgs);
 
     // TODO: Implement worker thread here.
     int numRows = args->height / args->numThreads;
@@ -154,8 +154,7 @@ void mandelbrotThread(
     pthread_t workers[MAX_THREADS];
     WorkerArgs args[MAX_THREADS];
 
-    for (int i = 0; i < numThreads; i++)
-    {
+    for (int i=0; i<numThreads; i++) {
         // TODO: Set thread arguments here.
         args[i].threadId = i;
         args[i].x0 = x0;
@@ -166,19 +165,18 @@ void mandelbrotThread(
         args[i].height = height;
         args[i].maxIterations = maxIterations;
         args[i].output = output;
-        args[i].numThreads = numThreads;
     }
 
     // Fire up the worker threads.  Note that numThreads-1 pthreads
     // are created and the main app thread is used as a worker as
     // well.
 
-    for (int i = 1; i < numThreads; i++)
+    for (int i=1; i<numThreads; i++)
         pthread_create(&workers[i], NULL, workerThreadStart, &args[i]);
 
     workerThreadStart(&args[0]);
 
     // wait for worker threads to complete
-    for (int i = 1; i < numThreads; i++)
+    for (int i=1; i<numThreads; i++)
         pthread_join(workers[i], NULL);
 }

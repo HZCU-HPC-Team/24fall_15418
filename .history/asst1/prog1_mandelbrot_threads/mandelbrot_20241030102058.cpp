@@ -127,7 +127,7 @@ void *workerThreadStart(void *threadArgs)
 
     mandelbrotSerial(args->x0, args->y0, args->x1, args->y1, args->width, args->height, startRow, endRow, args->maxIterations, args->output);
 
-    printf("Hello world from thread %d\n", args->threadId);
+    // printf("Hello world from thread %d\n", args->threadId);
 
     return NULL;
 }
