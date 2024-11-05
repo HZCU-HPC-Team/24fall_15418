@@ -117,17 +117,26 @@ typedef struct
 // Thread entrypoint.
 void *workerThreadStart(void *threadArgs)
 {
-
     WorkerArgs *args = static_cast<WorkerArgs *>(threadArgs);
 
-    // TODO: Implement worker thread here.
-    int numRows = args->height / args->numThreads;
-    int startRow = args->threadId * numRows;
-    int endRow = (args->threadId == args->numThreads - 1) ? args->height : startRow + numRows;
+    // // 计时代码
+    // double startTime = CycleTimer::currentSeconds();
 
-    mandelbrotSerial(args->x0, args->y0, args->x1, args->y1, args->width, args->height, startRow, endRow, args->maxIterations, args->output);
+    // 修改工作分配策略
+    for (int j = args->threadId; j < args->height; j += args->numThreads)
+    {
+        for (int i = 0; i < args->width; ++i)
+        {
+            float x = args->x0 + i * ((args->x1 - args->x0) / args->width);
+            float y = args->y0 + j * ((args->y1 - args->y0) / args->height);
+            int index = j * args->width + i;
+            args->output[index] = mandel(x, y, args->maxIterations);
+        }
+    }
 
-    printf("Hello world from thread %d\n", args->threadId);
+    // // 计时代码
+    // double endTime = CycleTimer::currentSeconds();
+    // printf("Thread %d: [%.3f] ms\n", args->threadId, (endTime - startTime) * 1000);
 
     return NULL;
 }
