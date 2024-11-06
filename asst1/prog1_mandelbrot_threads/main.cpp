@@ -128,6 +128,7 @@ int main(int argc, char** argv) {
 
     int* output_serial = new int[width*height];
     int* output_thread = new int[width*height];
+    int* output_openmp = new int[width*height];
 
     //
     // Run the serial implementation.  Run the code three times and
@@ -160,7 +161,24 @@ int main(int argc, char** argv) {
     printf("[mandelbrot thread]:\t\t[%.3f] ms\n", minThread * 1000);
     writePPMImage(output_thread, width, height, "mandelbrot-thread.ppm", maxIterations);
 
-    if (! verifyResult (output_serial, output_thread, width, height)) {
+    //
+    // Run the openmp version
+    //
+    memset(output_openmp, 0, width * height * sizeof(int));
+    double minThread = 1e30;
+    for (int i = 0; i < 5; ++i) {
+        double startTime = CycleTimer::currentSeconds();
+        // mandelbrotOpenMP(....)
+        mandelbrotThread(numThreads, x0, y0, x1, y1, width, height, maxIterations, output_openmp);
+        double endTime = CycleTimer::currentSeconds();
+        minThread = std::min(minThread, endTime - startTime);
+    }
+
+    printf("[mandelbrot openmp]:\t\t[%.3f] ms\n", minThread * 1000);
+    writePPMImage(output_thread, width, height, "mandelbrot-thread.ppm", maxIterations);
+
+    if (! verifyResult (output_serial, output_thread, width, height) && 
+    ! verifyResult(output_serial, output_openmp, width, height)) {
         printf ("ERROR : Output from threads does not match serial output\n");
 
         delete[] output_serial;
@@ -174,6 +192,7 @@ int main(int argc, char** argv) {
 
     delete[] output_serial;
     delete[] output_thread;
+    delete[] output_openmp;
 
     return 0;
 }
