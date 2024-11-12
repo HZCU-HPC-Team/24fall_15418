@@ -1,0 +1,7 @@
+.history
+
+
+# perf out
+*.data
+*.data.old
+*.perf-folded
