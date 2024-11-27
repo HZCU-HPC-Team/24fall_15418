@@ -23,6 +23,7 @@ void
 saxpyCuda(int N, float alpha, float* xarray, float* yarray, float* resultarray) {
 
     int totalBytes = sizeof(float) * 3 * N;
+    int size = sizeof(float) * N;
 
     // compute number of blocks and threads per block
     const int threadsPerBlock = 512;
@@ -35,6 +36,9 @@ saxpyCuda(int N, float alpha, float* xarray, float* yarray, float* resultarray) 
     //
     // TODO allocate device memory buffers on the GPU using cudaMalloc
     //
+    cudaMalloc(&device_x, size);
+    cudaMalloc(&device_y, size);
+    cudaMalloc(&device_result, size);
 
 
     // start timing after allocation of device memory
@@ -43,15 +47,23 @@ saxpyCuda(int N, float alpha, float* xarray, float* yarray, float* resultarray) 
     //
     // TODO copy input arrays to the GPU using cudaMemcpy
     //
+    cudaMemcpy(device_x, xarray, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(device_y, yarray, size, cudaMemcpyHostToDevice);
 
+    // Kernel Time start
+    double kernelStartTime = CycleTimer::currentSeconds();
 
     // run kernel
     saxpy_kernel<<<blocks, threadsPerBlock>>>(N, alpha, device_x, device_y, device_result);
     cudaDeviceSynchronize();
 
+    // Kernel Time end
+    double kernelEndTime = CycleTimer::currentSeconds();
+
     //
     // TODO copy result from GPU using cudaMemcpy
     //
+    cudaMemcpy(resultarray,device_result,size,cudaMemcpyDeviceToHost);
 
     // end timing after result has been copied back into host memory
     double endTime = CycleTimer::currentSeconds();
@@ -61,17 +73,23 @@ saxpyCuda(int N, float alpha, float* xarray, float* yarray, float* resultarray) 
         fprintf(stderr, "WARNING: A CUDA error occured: code=%d, %s\n", errCode, cudaGetErrorString(errCode));
     }
 
+    double kernelDuration = kernelEndTime - kernelStartTime;
+    printf("内核执行时间: %.3f ms\n", 1000.f * kernelDuration);
+
     double overallDuration = endTime - startTime;
     printf("Overall: %.3f ms\t\t[%.3f GB/s]\n", 1000.f * overallDuration, toBW(totalBytes, overallDuration));
 
     // TODO free memory buffers on the GPU
-
+    cudaFree(device_x);
+    cudaFree(device_y);
+    cudaFree(device_result);
 }
 
 void
 printCudaInfo() {
 
     // for fun, just print out some stats on the machine
+    printf("F**ky Nvidia\n");
 
     int deviceCount = 0;
     cudaError_t err = cudaGetDeviceCount(&deviceCount);

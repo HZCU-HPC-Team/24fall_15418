@@ -1,3 +1,4 @@
+
 EXECUTABLE := cudaSaxpy
 
 CU_FILES   := saxpy.cu
@@ -33,8 +34,7 @@ clean:
 		rm -rf $(OBJDIR) *.ppm *~ $(EXECUTABLE)
 
 $(EXECUTABLE): dirs $(OBJS)
-		$(NVCC) $(NVCCFLAGS) -o $@ $(OBJS) $(LDFLAGS)
-# $(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS)
+		$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS)
 
 $(OBJDIR)/%.o: %.cpp
 		$(CXX) $< $(CXXFLAGS) -c -o $@
