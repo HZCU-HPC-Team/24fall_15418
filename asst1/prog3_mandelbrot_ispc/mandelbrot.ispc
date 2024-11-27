@@ -1,5 +1,3 @@
-
-
 static inline int mandel(float c_re, float c_im, int count) {
     float z_re = c_re, z_im = c_im;
     int i;
@@ -67,14 +65,11 @@ export void mandelbrot_ispc_withtasks(uniform float x0, uniform float y0,
                                       uniform int maxIterations,
                                       uniform int output[])
 {
-
-    uniform int threadCount = 2;
-    uniform int rowsPerTask = height / threadCount;
-
-    // create threadCount tasks
+    uniform int threadCount = 8;
+    uniform int rowsPerTask = (height + threadCount - 1) / threadCount;
     launch[threadCount] mandelbrot_ispc_task(x0, y0, x1, y1,
-                                     width, height,
-                                     rowsPerTask,
-                                     maxIterations,
-                                     output); 
+                                             width, height,
+                                             rowsPerTask,
+                                             maxIterations,
+                                             output); 
 }

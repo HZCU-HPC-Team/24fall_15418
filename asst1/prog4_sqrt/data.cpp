@@ -13,8 +13,8 @@ void initRandom(float *values, int N) {
 void initGood(float *values, int N) {
     for (int i=0; i<N; i++)
     {
-        // Todo: Choose values
-        values[i] = 1.0f;
+        // Generate values that are small and close to each other
+        values[i] = 0.001f + (0.002f * static_cast<float>(i) / N);
     }
 }
 
@@ -22,8 +22,8 @@ void initGood(float *values, int N) {
 void initBad(float *values, int N) {
     for (int i=0; i<N; i++)
     {
-        // Todo: Choose values
-        values[i] = 1.0f;
+        // Generate values that are large and vary significantly
+        values[i] = 1000.0f + (1000.0f * static_cast<float>(i) / N);
     }
 }
 

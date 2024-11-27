@@ -43,79 +43,61 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-<<<<<<< HEAD
 // Core computation of Mandelbrot set membershop
 // Iterate complex number c to determine whether it diverges
-=======
-
-#include <stdio.h>
-#include <pthread.h>
-#include <stdlib.h>  // For exit()
-#include "CycleTimer.h"  // 用于测量线程执行时间
-
-// Mandelbrot 集合计算核心函数
-// 通过迭代判断复数 c 是否发散
->>>>>>> 165155cf79abcc3d56f092198693727cf8ec2c4c
 static inline int mandel(float c_re, float c_im, int count)
 {
     float z_re = c_re, z_im = c_im;
     int i;
-<<<<<<< HEAD
     for (i = 0; i < count; ++i)
     {
 
         if (z_re * z_re + z_im * z_im > 4.f)
             break;
 
-=======
-    // 最大迭代次数内，检查复数是否发散
-    for (i = 0; i < count; ++i) {
-        if (z_re * z_re + z_im * z_im > 4.f)  // 若模平方大于4，则视为发散
-            break;
-
-        // 计算新的复数 z 的实部和虚部
->>>>>>> 165155cf79abcc3d56f092198693727cf8ec2c4c
         float new_re = z_re * z_re - z_im * z_im;
         float new_im = 2.f * z_re * z_im;
         z_re = c_re + new_re;
         z_im = c_im + new_im;
     }
+
     return i;
 }
 
-// 串行计算 Mandelbrot 集合图像的函数
-// 生成图像数据，记录每个像素迭代的次数
+//
+// MandelbrotSerial --
+//
+// Compute an image visualizing the mandelbrot set.  The resulting
+// array contains the number of iterations required before the complex
+// number corresponding to a pixel could be rejected from the set.
+//
+// * x0, y0, x1, y1 describe the complex coordinates mapping
+//   into the image viewport.
+// * width, height describe the size of the output image
+// * startRow, endRow describe how much of the image to compute
 void mandelbrotSerial(
-    float x0, float y0, float x1, float y1,  // 复数平面上的区域范围
-    int width, int height,                  // 图像宽度和高度
-    int startRow, int endRow,               // 计算的行范围
-    int maxIterations,                      // 最大迭代次数
-    int output[])                           // 输出数组，用于存储计算结果
+    float x0, float y0, float x1, float y1,
+    int width, int height,
+    int startRow, int endRow,
+    int maxIterations,
+    int output[])
 {
-    // 计算每个像素对应的复数步长
     float dx = (x1 - x0) / width;
     float dy = (y1 - y0) / height;
 
-<<<<<<< HEAD
     for (int j = startRow; j < endRow; j++)
     {
         for (int i = 0; i < width; ++i)
         {
-=======
-    // 遍历指定行范围内的每个像素
-    for (int j = startRow; j < endRow; j++) {
-        for (int i = 0; i < width; ++i) {
->>>>>>> 165155cf79abcc3d56f092198693727cf8ec2c4c
             float x = x0 + i * dx;
             float y = y0 + j * dy;
 
             int index = (j * width + i);
-            output[index] = mandel(x, y, maxIterations);  // 计算每个像素的迭代次数
+            output[index] = mandel(x, y, maxIterations);
         }
     }
 }
 
-<<<<<<< HEAD
 // Struct for passing arguments to thread routine
 typedef struct
 {
@@ -155,71 +137,35 @@ void *workerThreadStart(void *threadArgs)
     // // 计时代码
     // double endTime = CycleTimer::currentSeconds();
     // printf("Thread %d: [%.3f] ms\n", args->threadId, (endTime - startTime) * 1000);
-=======
-// 用于传递给线程的参数结构体
-typedef struct {
-    float x0, x1;          // 复数平面上的 x 轴范围
-    float y0, y1;          // 复数平面上的 y 轴范围
-    int width;             // 图像的宽度
-    int height;            // 图像的高度
-    int maxIterations;     // 最大迭代次数
-    int* output;           // 输出数组，存储每个像素的迭代结果
-    int threadId;          // 线程的 ID
-    int numThreads;        // 线程总数
-} WorkerArgs;
 
-// 线程的入口函数
-void* workerThreadStart(void* threadArgs) {
-
-    WorkerArgs* args = (WorkerArgs*) threadArgs;  // 将传入的参数转换为 WorkerArgs 类型
-
-    // 计算每个线程需要处理的行范围
-    int totalRows = args->height;
-    int rowsPerThread = totalRows / args->numThreads;
-    int startRow = args->threadId * rowsPerThread;
-    int endRow = (args->threadId == args->numThreads - 1) 
-                    ? totalRows  // 最后一个线程负责剩余的行
-                    : startRow + rowsPerThread;
-
-    // 调用串行计算函数，计算指定行范围内的 Mandelbrot 集合
-    mandelbrotSerial(
-        args->x0, args->y0, args->x1, args->y1,
-        args->width, args->height,
-        startRow, endRow,
-        args->maxIterations,
-        args->output);
->>>>>>> 165155cf79abcc3d56f092198693727cf8ec2c4c
-
-    return NULL;  // 线程结束
+    return NULL;
 }
 
-// 使用多线程计算 Mandelbrot 集合的主函数
+//
+// MandelbrotThread --
+//
+// Multi-threaded implementation of mandelbrot set image generation.
+// Multi-threading performed via pthreads.
 void mandelbrotThread(
-    int numThreads,        // 线程数
-    float x0, float y0,    // 复数平面上的起始点 (x0, y0)
-    float x1, float y1,    // 复数平面上的终止点 (x1, y1)
-    int width, int height, // 图像宽度和高度
-    int maxIterations,     // 最大迭代次数
-    int output[])          // 输出数组
+    int numThreads,
+    float x0, float y0, float x1, float y1,
+    int width, int height,
+    int maxIterations, int output[])
 {
-    const static int MAX_THREADS = 32;  // 允许的最大线程数
+    const static int MAX_THREADS = 32;
 
-    if (numThreads > MAX_THREADS) {
+    if (numThreads > MAX_THREADS)
+    {
         fprintf(stderr, "Error: Max allowed threads is %d\n", MAX_THREADS);
         exit(1);
     }
 
-    pthread_t workers[MAX_THREADS];   // 线程数组
-    WorkerArgs args[MAX_THREADS];     // 线程参数数组
+    pthread_t workers[MAX_THREADS];
+    WorkerArgs args[MAX_THREADS];
 
-<<<<<<< HEAD
     for (int i = 0; i < numThreads; i++)
     {
         // TODO: Set thread arguments here.
-=======
-    // 初始化每个线程的参数
-    for (int i = 0; i < numThreads; i++) {
->>>>>>> 165155cf79abcc3d56f092198693727cf8ec2c4c
         args[i].threadId = i;
         args[i].x0 = x0;
         args[i].x1 = x1;
@@ -232,48 +178,16 @@ void mandelbrotThread(
         args[i].numThreads = numThreads;
     }
 
-<<<<<<< HEAD
     // Fire up the worker threads.  Note that numThreads-1 pthreads
     // are created and the main app thread is used as a worker as
     // well.
 
     for (int i = 1; i < numThreads; i++)
-=======
-    // 创建并启动工作线程（主线程也参与计算）
-    for (int i = 1; i < numThreads; i++) {
->>>>>>> 165155cf79abcc3d56f092198693727cf8ec2c4c
         pthread_create(&workers[i], NULL, workerThreadStart, &args[i]);
-    }
 
-    // 主线程处理自己的任务
     workerThreadStart(&args[0]);
 
-<<<<<<< HEAD
     // wait for worker threads to complete
     for (int i = 1; i < numThreads; i++)
-=======
-    // 等待所有子线程完成
-    for (int i = 1; i < numThreads; i++) {
->>>>>>> 165155cf79abcc3d56f092198693727cf8ec2c4c
         pthread_join(workers[i], NULL);
-    }
 }
-
-
-// void mandelbrotOpenMP(
-//     int numThreads,        // 线程数
-//     float x0, float y0,    // 复数平面上的起始点 (x0, y0)
-//     float x1, float y1,    // 复数平面上的终止点 (x1, y1)
-//     int width, int height, // 图像宽度和高度
-//     int maxIterations,     // 最大迭代次数
-//     int output[])          // 输出数组
-// {
-//     // TODO: finish openmp version of mandelbrot
-//     #pragma omp parallel{
-//         // ...
-//     }
-//     # pragma omp parallel for{
-//         // ...
-//     }
-
-// }

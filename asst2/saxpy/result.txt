@@ -1,0 +1,14 @@
+---------------------------------------------------------
+Found 1 CUDA devices
+Device 0: NVIDIA GeForce RTX 4090
+   SMs:        128
+   Global mem: 24111 MB
+   CUDA Cap:   8.9
+---------------------------------------------------------
+Overall: 22.114 ms		[10.108 GB/s]
+ 0.274 ms		[814.964 GB/s]
+ Total Bytes:240000000Overall: 21.879 ms		[10.216 GB/s]
+ 0.262 ms		[852.850 GB/s]
+ Total Bytes:240000000Overall: 21.842 ms		[10.234 GB/s]
+ 0.270 ms		[827.256 GB/s]
+ Total Bytes:240000000
